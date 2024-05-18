@@ -4,23 +4,26 @@ import jakarta.validation.constraints.*;
 import org.springframework.web.multipart.MultipartFile;
 
 public class JogadorDto {
+    private int id; // Adicionar id para manuseio em operações de edição
     @NotEmpty(message = "O nome é requerido")
     private String nome;
-
     @NotEmpty(message = "O time é requerido")
     private String time;
-
     @NotEmpty(message = "A posição do jogador é requerida")
     private String posicao;
-
     @Min(0)
     private double idade;
-
-    @Size(min = 10, message = "A descrição do jogador precisa de ao menos 10 caracteres")
-    @Size(max = 2000, message ="A descrição do jogador não pode exceder 2000 caracteres")
+    @Size(min = 10, max = 2000, message = "A descrição do jogador precisa de ao menos 10 caracteres e não pode exceder 2000 caracteres")
     private String descricao;
-
     private MultipartFile fotoJogador;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getNome() {
         return nome;
