@@ -2,7 +2,9 @@ package com.mackenzie.projetoFutebol.controllers;
 
 import com.mackenzie.projetoFutebol.modelos.Jogador;
 import com.mackenzie.projetoFutebol.modelos.JogadorDto;
+import com.mackenzie.projetoFutebol.modelos.Time;
 import com.mackenzie.projetoFutebol.servicos.jogadoresRepository;
+import com.mackenzie.projetoFutebol.servicos.TimeRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -28,11 +30,13 @@ public class JogadorController {
         @Autowired
         private jogadoresRepository repo;
 
+        @Autowired
+        private TimeRepository timeRepository;
+
         @GetMapping({"", "/"})
         public String mostrarListaJogadores(Model model) {
                 List<Jogador> jogadores = repo.findAll(Sort.by(Sort.Direction.DESC, "id"));
                 model.addAttribute("jogadores", jogadores);
-                System.out.println("Acessando a lista de jogadores");
                 return "jogadores/index";
         }
 
@@ -40,172 +44,121 @@ public class JogadorController {
         public String mostrarPaginaCriada(Model model) {
                 JogadorDto jogadorDto = new JogadorDto();
                 model.addAttribute("jogadorDto", jogadorDto);
-                System.out.println("Acessando a página de criação de jogador");
+                model.addAttribute("times", timeRepository.findAll()); // Adiciona a lista de times ao modelo
                 return "jogadores/CriarJogador";
         }
 
         @PostMapping("create")
-        public String criarJogador(@Valid @ModelAttribute JogadorDto jogadorDto, BindingResult result) {
+        public String criarJogador(@Valid @ModelAttribute JogadorDto jogadorDto, BindingResult result, Model model) {
                 if (result.hasErrors()) {
-                        System.out.println("Erros de validação encontrados.");
+                        model.addAttribute("times", timeRepository.findAll()); // Assegura que os times estejam disponíveis após o erro
                         return "jogadores/CriarJogador";
                 }
 
-                System.out.println("Nenhum erro de validação.");
-
                 Jogador jogador = new Jogador();
-                if (jogadorDto.getFotoJogador() != null && !jogadorDto.getFotoJogador().isEmpty()) {
-                        try {
-                                String fileName = saveFile(jogadorDto.getFotoJogador());
-                                jogador.setFotoJogador(fileName);
-                                System.out.println("Arquivo salvo: " + fileName);
-                        } catch (IOException ex) {
-                                System.out.println("Falha ao salvar arquivo: " + ex.getMessage());
-                                result.addError(new FieldError("jogadorDto", "fotoJogador", "Falha ao salvar a foto do jogador"));
-                                return "jogadores/CriarJogador";
-                        }
-                } else {
-                        System.out.println("Nenhum arquivo para salvar.");
-                }
-
-                // Configuração dos dados do jogador
                 jogador.setNome(jogadorDto.getNome());
-                jogador.setTime(jogadorDto.getTime());
+                jogador.setTime(timeRepository.findById(jogadorDto.getTimeId()).orElse(null)); // Busca e configura o Time pelo ID
                 jogador.setPosicao(jogadorDto.getPosicao());
                 jogador.setIdade(jogadorDto.getIdade());
                 jogador.setDescricao(jogadorDto.getDescricao());
                 jogador.setCriadoEm(new Date());
 
-                // Salvando o jogador no banco de dados
-                repo.save(jogador);
-                System.out.println("Salvando jogador no banco de dados.");
+                if (jogadorDto.getFotoJogador() != null && !jogadorDto.getFotoJogador().isEmpty()) {
+                        try {
+                                String fileName = saveFile(jogadorDto.getFotoJogador());
+                                jogador.setFotoJogador(fileName);
+                        } catch (IOException ex) {
+                                result.addError(new FieldError("jogadorDto", "fotoJogador", "Falha ao salvar a foto do jogador"));
+                                model.addAttribute("times", timeRepository.findAll()); // Assegura que os times estejam disponíveis
+                                return "jogadores/CriarJogador";
+                        }
+                }
 
+                repo.save(jogador);
                 return "redirect:/jogadores";
         }
 
         @GetMapping("edit")
         public String mostrarEdicaoPage(Model model, @RequestParam int id) {
-                try {
-                        Jogador jogador = repo.findById(id).get();
-                        model.addAttribute("jogador", jogador);
-
-                        JogadorDto jogadorDto = new JogadorDto();
-                        jogadorDto.setId(jogador.getId()); // Assegure-se que o ID está sendo setado aqui
-                        jogadorDto.setNome(jogador.getNome());
-                        jogadorDto.setTime(jogador.getTime());
-                        jogadorDto.setPosicao(jogador.getPosicao());
-                        jogadorDto.setIdade(jogador.getIdade());
-                        jogadorDto.setDescricao(jogador.getDescricao());
-
-                        model.addAttribute("jogadorDto", jogadorDto);
-                } catch (Exception ex) {
-                        System.out.println("Exception: " + ex.getMessage());
+                Jogador jogador = repo.findById(id).orElse(null);
+                if (jogador == null) {
                         return "redirect:/jogadores";
                 }
+                model.addAttribute("jogador", jogador);
+
+                JogadorDto jogadorDto = new JogadorDto();
+                jogadorDto.setId(jogador.getId());
+                jogadorDto.setNome(jogador.getNome());
+                jogadorDto.setTimeId(jogador.getTime().getId()); // Garante que usamos timeId aqui
+                jogadorDto.setPosicao(jogador.getPosicao());
+                jogadorDto.setIdade(jogador.getIdade());
+                jogadorDto.setDescricao(jogador.getDescricao());
+
+                model.addAttribute("jogadorDto", jogadorDto);
+                model.addAttribute("times", timeRepository.findAll()); // Adiciona a lista de times ao modelo
                 return "jogadores/EditJogador";
         }
 
-
-
         @PutMapping("update")
         public String updateJogador(@Valid @ModelAttribute JogadorDto jogadorDto, BindingResult result, Model model) {
-                System.out.println("ID Recebido: " + jogadorDto.getId()); // Debug para verificar o ID recebido
                 if (result.hasErrors()) {
-                        model.addAttribute("jogadorDto", jogadorDto);
+                        model.addAttribute("times", timeRepository.findAll()); // Adiciona a lista de times ao modelo em caso de erro
                         return "jogadores/EditJogador";
                 }
 
-                if (jogadorDto.getId() == 0) {
-                        System.out.println("ID do jogador não recebido corretamente.");
-                        return "redirect:/error";  // Redireciona para uma página de erro ou a página de lista com uma mensagem de erro.
-                }
-
-
-                Jogador jogador = repo.findById(jogadorDto.getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Jogador inválido com ID:" + jogadorDto.getId()));
-
-                try {
-                        if (jogadorDto.getFotoJogador() != null && !jogadorDto.getFotoJogador().isEmpty()) {
-                                String fileName = saveFile(jogadorDto.getFotoJogador());
-                                jogador.setFotoJogador(fileName);
-                        }
-                } catch (IOException ex) {
-                        System.out.println("Falha ao salvar arquivo: " + ex.getMessage());
-                        result.addError(new FieldError("jogadorDto", "fotoJogador", "Falha ao salvar a foto do jogador"));
-                        return "jogadores/EditJogador";
-                }
-
+                Jogador jogador = repo.findById(jogadorDto.getId()).orElseThrow(() -> new IllegalArgumentException("Jogador inválido com ID:" + jogadorDto.getId()));
                 jogador.setNome(jogadorDto.getNome());
-                jogador.setTime(jogadorDto.getTime());
+                jogador.setTime(timeRepository.findById(jogadorDto.getTimeId()).orElse(null)); // Busca e configura o Time pelo ID
                 jogador.setPosicao(jogadorDto.getPosicao());
                 jogador.setIdade(jogadorDto.getIdade());
                 jogador.setDescricao(jogadorDto.getDescricao());
+
+                if (jogadorDto.getFotoJogador() != null && !jogadorDto.getFotoJogador().isEmpty()) {
+                        try {
+                                String fileName = saveFile(jogadorDto.getFotoJogador());
+                                jogador.setFotoJogador(fileName);
+                        } catch (IOException ex) {
+                                result.addError(new FieldError("jogadorDto", "fotoJogador", "Falha ao salvar a foto do jogador"));
+                                model.addAttribute("times", timeRepository.findAll()); // Assegura que os times estejam disponíveis
+                                return "jogadores/EditJogador";
+                        }
+                }
 
                 repo.save(jogador);
                 return "redirect:/jogadores";
         }
 
         @GetMapping("delete")
-        public String deleteJogador (@RequestParam int id) {
-                try {
-                        Jogador jogador = repo.findById(id).get();
-
-                        Path imagePath = Paths.get("public/images" + jogador.getFotoJogador());
-                        try {
-                                Files.delete(imagePath);
-                        }
-                        catch (Exception ex) {
-                                System.out.println("Exception: " + ex.getMessage());
-                        }
-
-                        //deletar o jogador
-                        repo.delete(jogador);
+        public String deleteJogador(@RequestParam int id) {
+                Jogador jogador = repo.findById(id).orElse(null);
+                if (jogador == null) {
+                        return "redirect:/jogadores";
                 }
-                catch (Exception ex) {
-                        System.out.println("Exception:" + ex.getMessage());
-                }
-
+                repo.delete(jogador);
                 return "redirect:/jogadores";
         }
-
-
-
-
-
 
         private String saveFile(MultipartFile file) throws IOException {
                 if (file.isEmpty()) {
                         throw new IOException("O arquivo está vazio e não pode ser salvo.");
                 }
 
-                // Assegure-se que o caminho do diretório de upload está correto e acessível
-                String uploadDir = "public/images/"; // Ajuste conforme a estrutura do seu projeto
+                String uploadDir = "public/images/";
                 Path uploadPath = Paths.get(uploadDir);
-
-                // Verifique e crie o diretório se não existir
                 if (!Files.exists(uploadPath)) {
-                        try {
-                                Files.createDirectories(uploadPath);
-                        } catch (IOException e) {
-                                throw new IOException("Não foi possível criar o diretório de upload: " + uploadPath);
-                        }
+                        Files.createDirectories(uploadPath);
                 }
 
-                // Tente salvar o arquivo
                 String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
                 Path filePath = uploadPath.resolve(fileName);
                 try (InputStream inputStream = file.getInputStream()) {
                         Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
                         return fileName;
-                } catch (IOException e) {
-                        throw new IOException("Não foi possível salvar o arquivo: " + fileName, e);
                 }
         }
 
         @Bean
-        public HiddenHttpMethodFilter hiddenHttpMethodFilter(){
-                HiddenHttpMethodFilter filter = new HiddenHttpMethodFilter();
-                return filter;
+        public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
+                return new HiddenHttpMethodFilter();
         }
-
 }

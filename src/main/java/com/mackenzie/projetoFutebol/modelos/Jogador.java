@@ -12,7 +12,11 @@ public class Jogador {
     private int id;
 
     private String nome;
-    private String time;
+
+    @ManyToOne
+    @JoinColumn(name = "time_id") // Chave estrangeira
+    private Time time;
+
     private String posicao;
     private double idade;
     @Column(columnDefinition = "TEXT")
@@ -36,13 +40,14 @@ public class Jogador {
         this.nome = nome;
     }
 
-    public String getTime() { // Corrigido de gettime para getTime
+    public Time getTime() {
         return time;
     }
 
-    public void setTime(String time) { // Corrigido de settime para setTime
+    public void setTime(Time time) {
         this.time = time;
     }
+
 
     public String getPosicao() { // Corrigido de getposicao para getPosicao
         return posicao;

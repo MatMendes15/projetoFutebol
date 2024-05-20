@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,9 +11,8 @@
     <div class="row">
         <div class="col-md-8 mx-auto rounded border p-4 m-4">
             <h2 class="text-center mb-5">Novo Jogador</h2>
-
             <form method="post" enctype="multipart/form-data" th:action="@{/jogadores/create}" th:object="${jogadorDto}">
-            <div class="mb-3 row">
+                <div class="mb-3 row">
                     <label class="col-sm-4 col-form-label">Nome</label>
                     <div class="col-sm-8">
                         <input type="text" class="form-control" th:field="*{nome}" />
@@ -25,8 +23,12 @@
                 <div class="mb-3 row">
                     <label class="col-sm-4 col-form-label">Time</label>
                     <div class="col-sm-8">
-                        <input type="text" class="form-control" th:field="*{time}" />
-                        <p th:if="${#fields.hasErrors('time')}" th:errors="*{time}" class="text-danger"></p>
+                        <select class="form-select" th:field="*{timeId}">
+                            <option value="">Selecione um Time</option>
+                            <option th:each="time : ${times}" th:value="${time.id}" th:text="${time.nome}"></option>
+                        </select>
+
+                        <p th:if="${#fields.hasErrors('timeId')}" th:errors="*{timeId}" class="text-danger"></p>
                     </div>
                 </div>
 

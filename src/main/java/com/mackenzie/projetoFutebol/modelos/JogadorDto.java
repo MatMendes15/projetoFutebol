@@ -1,14 +1,14 @@
 package com.mackenzie.projetoFutebol.modelos;
 
-import jakarta.validation.constraints.*;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.validation.constraints.*;
 
 public class JogadorDto {
-    private int id; // Adicionar id para manuseio em operações de edição
+    private int id;
     @NotEmpty(message = "O nome é requerido")
     private String nome;
-    @NotEmpty(message = "O time é requerido")
-    private String time;
+    @NotNull(message = "O time é requerido")
+    private Integer timeId;  // Alterado para armazenar o ID do time
     @NotEmpty(message = "A posição do jogador é requerida")
     private String posicao;
     @Min(0)
@@ -17,6 +17,8 @@ public class JogadorDto {
     private String descricao;
     private MultipartFile fotoJogador;
 
+
+    // Getters e setters
     public int getId() {
         return id;
     }
@@ -33,12 +35,12 @@ public class JogadorDto {
         this.nome = nome;
     }
 
-    public String getTime() {
-        return time;
+    public Integer getTimeId() {
+        return timeId;
     }
 
-    public void setTime(String time) {
-        this.time = time;
+    public void setTimeId(Integer timeId) {
+        this.timeId = timeId;
     }
 
     public String getPosicao() {
