@@ -18,7 +18,7 @@ public class JogadorDto {
     private MultipartFile fotoJogador;
 
 
-    // Getters e setters
+    // Getters | setters
     public int getId() {
         return id;
     }

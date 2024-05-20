@@ -33,9 +33,9 @@ public class JogadorController {
         @Autowired
         private TimeRepository timeRepository;
 
-        @GetMapping({"", "/"})
+        @GetMapping({"", "/"}) //Trata requisição GET
         public String mostrarListaJogadores(Model model) {
-                List<Jogador> jogadores = repo.findAll(Sort.by(Sort.Direction.DESC, "id"));
+                List<Jogador> jogadores = repo.findAll(Sort.by(Sort.Direction.DESC, "id")); // Busca jogadores e ordena descrecente
                 model.addAttribute("jogadores", jogadores);
                 return "jogadores/index";
         }
@@ -89,7 +89,7 @@ public class JogadorController {
                 JogadorDto jogadorDto = new JogadorDto();
                 jogadorDto.setId(jogador.getId());
                 jogadorDto.setNome(jogador.getNome());
-                jogadorDto.setTimeId(jogador.getTime().getId()); // Garante que usamos timeId aqui
+                jogadorDto.setTimeId(jogador.getTime().getId()); // Garante que usamos timeId
                 jogadorDto.setPosicao(jogador.getPosicao());
                 jogadorDto.setIdade(jogador.getIdade());
                 jogadorDto.setDescricao(jogador.getDescricao());

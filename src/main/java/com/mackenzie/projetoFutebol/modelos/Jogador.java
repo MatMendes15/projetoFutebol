@@ -24,6 +24,7 @@ public class Jogador {
     private Date criadoEm;
     private String fotoJogador;
 
+    // Getters | setters
     public int getId() {
         return id;
     }
@@ -32,11 +33,11 @@ public class Jogador {
         this.id = id;
     }
 
-    public String getNome() { // Corrigido de getnome para getNome
+    public String getNome() {
         return nome;
     }
 
-    public void setNome(String nome) { // Corrigido de setnome para setNome
+    public void setNome(String nome) {
         this.nome = nome;
     }
 
@@ -49,43 +50,43 @@ public class Jogador {
     }
 
 
-    public String getPosicao() { // Corrigido de getposicao para getPosicao
+    public String getPosicao() {
         return posicao;
     }
 
-    public void setPosicao(String posicao) { // Corrigido de setposicao para setPosicao
+    public void setPosicao(String posicao) {
         this.posicao = posicao;
     }
 
-    public double getIdade() { // Corrigido de getidade para getIdade
+    public double getIdade() {
         return idade;
     }
 
-    public void setIdade(double idade) { // Corrigido de setidade para setIdade
+    public void setIdade(double idade) {
         this.idade = idade;
     }
 
-    public String getDescricao() { // Corrigido de getdescricao para getDescricao
+    public String getDescricao() {
         return descricao;
     }
 
-    public void setDescricao(String descricao) { // Corrigido de setdescricao para setDescricao
+    public void setDescricao(String descricao) {
         this.descricao = descricao;
     }
 
-    public Date getCriadoEm() { // Corrigido de getcriadoEm para getCriadoEm
+    public Date getCriadoEm() {
         return criadoEm;
     }
 
-    public void setCriadoEm(Date criadoEm) { // Corrigido de setcriadoEm para setCriadoEm
+    public void setCriadoEm(Date criadoEm) {
         this.criadoEm = criadoEm;
     }
 
-    public String getFotoJogador() { // Corrigido de getFotoJogador para getFotoJogador
+    public String getFotoJogador() {
         return fotoJogador;
     }
 
-    public void setFotoJogador(String fotoJogador) { // Corrigido de setFotoJogador para setFotoJogador
+    public void setFotoJogador(String fotoJogador) {
         this.fotoJogador = fotoJogador;
     }
 }

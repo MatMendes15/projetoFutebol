@@ -15,7 +15,7 @@ public class Time {
     @OneToMany(mappedBy = "time")
     private List<Jogador> jogadores;
 
-    // Getters and Setters
+    // Getters | Setters
     public int getId() {
         return id;
     }
